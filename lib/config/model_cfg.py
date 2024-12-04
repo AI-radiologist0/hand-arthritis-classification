@@ -12,14 +12,11 @@ from yacs.config import CfgNode as CN
 
 # Your model related params
 # examples
-FCN = CN(new_allowed=True)
-FCN.INPUT_CHANNELS = 784
-FCN.HIDDEN_CHANNELS = [128, 64, 10]
-FCN.HIDDEN_ACTIVATION = 'ReLU'
-FCN.HIDDEN_DROPOUT = 0.25
-FCN.OUTPUT_CHANNELS = 2
-FCN.OUTPUT_ACTIVATION = 'logSoftMax'
+VGG19 = CN(new_allowed=True)
+VGG19.INPUT_SIZE = [224, 224, 3]
+VGG19.NUM_CLASSES = 3
+
 
 MODEL_EXTRAS = {
-    'FCN': FCN,
+    'VGG19': VGG19,
 }

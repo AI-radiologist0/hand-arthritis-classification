@@ -31,7 +31,7 @@ _C.CUDNN.ENABLED = True
 
 # common params for NETWORK
 _C.MODEL = CN()
-_C.MODEL.NAME = 'FCN'
+_C.MODEL.NAME = 'VGG19'
 _C.MODEL.EXTRA = MODEL_EXTRAS[_C.MODEL.NAME]
 _C.MODEL.INIT_WEIGHTS = True
 _C.MODEL.PRETRAINED = ''
@@ -41,16 +41,13 @@ _C.MODEL.PRETRAINED = ''
 # DATASET related params
 _C.DATASET = CN()
 _C.DATASET.ROOT = ''
-_C.DATASET.TRAIN_SET = 'train'
-_C.DATASET.TEST_SET = 'valid'
+# _C.DATASET.TRAIN_SET = 'train'
+# _C.DATASET.TEST_SET = 'valid'
 _C.DATASET.DATA_FORMAT = 'jpg'
+_C.DATASET.SPLIT_RATIO = {'train': 0.7, 'validation': 0.15, 'test': 0.15}
 
-# training data augmentation
-# Implement your data augmentation
-
-# train
+# 훈련 관련 설정
 _C.TRAIN = CN()
-
 _C.TRAIN.LR_FACTOR = 0.1
 _C.TRAIN.LR_STEP = [90, 110]
 _C.TRAIN.LR = 0.001
