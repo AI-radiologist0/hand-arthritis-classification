@@ -22,6 +22,7 @@ _C.LOG_DIR = ''
 _C.GPUS = 0
 _C.WORKERS = 4
 _C.PHASE = 'train'
+_C.DEVICE = "GPU"
 
 # Cudnn related params
 _C.CUDNN = CN()
