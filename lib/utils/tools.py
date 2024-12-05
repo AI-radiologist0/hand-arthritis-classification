@@ -4,6 +4,9 @@ import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
 from torchvision import transforms
+from torch.utils.data import DataLoader, Subset
+from torchvision import datasets, transforms
+from sklearn.model_selection import train_test_split
 
 """ Check Device and Path for saving and loading """
 
@@ -210,3 +213,48 @@ def mnist_transform():
         transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5], inplace=True)
     ]
     return transforms.Compose(transforms_list)
+
+
+def split_dataset(data_dir, train_ratio=0.7, val_ratio=0.15, test_ratio=0.15, batch_size=32, num_workers=4):
+    """
+    데이터셋을 train/val/test 비율로 분할하고, 각각의 DataLoader를 반환합니다.
+
+    Args:
+        data_dir (str): 데이터가 저장된 디렉토리.
+        train_ratio (float): 훈련 데이터 비율 (0~1).
+        val_ratio (float): 검증 데이터 비율 (0~1).
+        test_ratio (float): 테스트 데이터 비율 (0~1).
+        batch_size (int): 각 DataLoader의 배치 크기.
+        num_workers (int): DataLoader에서 사용할 워커 수.
+
+    Returns:
+        tuple: (train_loader, val_loader, test_loader)
+    """
+    assert train_ratio + val_ratio + test_ratio == 1.0, "train/val/test 비율의 합은 1이어야 합니다."
+
+    # 데이터 전처리
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ])
+
+    # 데이터셋 로드
+    dataset = datasets.ImageFolder(root=data_dir, transform=transform)
+
+    # 전체 인덱스 생성 및 섞기
+    indices = list(range(len(dataset)))
+    train_idx, temp_idx = train_test_split(indices, test_size=(val_ratio + test_ratio), random_state=42)
+    val_idx, test_idx = train_test_split(temp_idx, test_size=(test_ratio / (val_ratio + test_ratio)), random_state=42)
+
+    # Subset으로 데이터셋 분리
+    train_set = Subset(dataset, train_idx)
+    val_set = Subset(dataset, val_idx)
+    test_set = Subset(dataset, test_idx)
+
+    # DataLoader 생성
+    train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=num_workers)
+    val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+    test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+
+    return train_loader, val_loader, test_loader
