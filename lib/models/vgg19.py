@@ -13,6 +13,7 @@ class VGG19(nn.Module):
         super(VGG19, self).__init__()
         self.is_train = is_train
         self.num_classes = cfg.MODEL.NUM_CLASSES
+        self.device = torch.device(cfg.DEVICE)
 
         # VGG19 모델 로드
         self.model = models.vgg19(pretrained=True)
@@ -27,7 +28,7 @@ class VGG19(nn.Module):
             self.model.eval()
 
     def forward(self, x):
-        return self.model(x)
+        return self.model(x.to(self.device))
 
     def get_classifier(self):
         return self.model.classifier[6]  # 마지막 fully connected layer
