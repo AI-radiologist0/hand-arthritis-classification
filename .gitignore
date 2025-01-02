@@ -133,3 +133,13 @@ dmypy.json
 checkpoint/
 logs/
 results/
+output/
+gradcam/
+nohup.out
+*.log
+.vscode/
+
+events.out.*
+*.pth
+*.pth.tar
+output/RA_hand_merge_cau_2024-12-14_22-35-43_epoch_0_250_classifier_ra_normal/ckpt/best_model.pth.tar

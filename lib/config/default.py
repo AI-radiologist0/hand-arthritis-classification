@@ -23,6 +23,8 @@ _C.GPUS = 0
 _C.WORKERS = 4
 _C.PHASE = 'train'
 _C.DEVICE = "GPU"
+_C.PRINT_FREQ = 1
+
 
 # Cudnn related params
 _C.CUDNN = CN()
@@ -42,10 +44,14 @@ _C.MODEL.PRETRAINED = ''
 # DATASET related params
 _C.DATASET = CN()
 _C.DATASET.ROOT = ''
-# _C.DATASET.TRAIN_SET = 'train'
-# _C.DATASET.TEST_SET = 'valid'
+_C.DATASET.JSON = 'data.json'
+_C.DATASET.TRAIN_SET = 'train'
+_C.DATASET.TEST_SET = 'valid'
 _C.DATASET.DATA_FORMAT = 'jpg'
-_C.DATASET.SPLIT_RATIO = {'train': 0.7, 'validation': 0.15, 'test': 0.15}
+_C.DATASET.INCLUDE_CLASSES = ['oa', 'normal']
+_C.DATASET.AUGMENT = True
+_C.DATASET.BASIC_TRANSFORM = True
+# _C.DATASET.SPLIT_RATIO = {'train': 0.7, 'validation': 0.15, 'test': 0.15}
 
 # 훈련 관련 설정
 _C.TRAIN = CN()
@@ -60,6 +66,11 @@ _C.TRAIN.NESTEROV = False
 _C.TRAIN.GAMMA1 = 0.99
 _C.TRAIN.GAMMA2 = 0.0
 
+_C.TRAIN.SCHEDULER = 'ReduceLROnPlateau '
+_C.TRAIN.MODE = 'min'
+_C.TRAIN.factor = 0.5
+_C.TRAIN.PATIENCE = 5
+
 _C.TRAIN.BEGIN_EPOCH = 0
 _C.TRAIN.END_EPOCH = 140
 
@@ -69,11 +80,19 @@ _C.TRAIN.CHECKPOINT = ''
 _C.TRAIN.BATCH_SIZE_PER_GPU = 32
 _C.TRAIN.SHUFFLE = True
 
+# KFold Setting
+_C.KFOLD = CN()
+_C.KFOLD.USE_KFOLD = True
+_C.KFOLD.KFOLD_SIZE = 5
+_C.KFOLD.P = 0
+_C.KFOLD.TEST_SET_RATIO = 0.15
+
 # testing
 _C.TEST = CN()
 
 # size of images for each device
 _C.TEST.BATCH_SIZE_PER_GPU = 32
+_C.TEST.TEST_SET_RATIO = 0.15
 
 # debug
 _C.DEBUG = CN()
@@ -83,16 +102,16 @@ _C.DEBUG.DEBUG = False
 def update_config(cfg, args):
     cfg.defrost()
     cfg.merge_from_file(args.cfg)
-    cfg.merge_from_list(args.opts)
+    # cfg.merge_from_list(args.opts)
 
-    if args.modelDir:
-        cfg.OUTPUT_DIR = args.modelDir
-
-    if args.logDir:
-        cfg.LOG_DIR = args.logDir
-
-    if args.dataDir:
-        cfg.DATA_DIR = args.dataDir
+    # if args.modelDir:
+    #     cfg.OUTPUT_DIR = args.modelDir
+    #
+    # if args.logDir:
+    #     cfg.LOG_DIR = args.logDir
+    #
+    # if args.dataDir:
+    #     cfg.DATA_DIR = args.dataDir
 
     # cfg.DATASET.ROOT = os.path.join(
     #     cfg.DATA_DIR, cfg.DATASET.ROOT
