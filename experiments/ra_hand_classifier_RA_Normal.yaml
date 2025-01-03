@@ -9,7 +9,7 @@ DATASET:
   TEST_SET: valid
   TRAIN_SET: train
   INCLUDE_CLASSES: ['ra', 'normal']
-  AUGMENT: True
+  AUGMENT: False
 DATA_DIR: 
 DEBUG:
   DEBUG: False
