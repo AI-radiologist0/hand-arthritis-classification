@@ -10,6 +10,8 @@ DATASET:
   TRAIN_SET: train
   INCLUDE_CLASSES: ['ra', 'normal']
   AUGMENT: False
+  MEAN: [0.243, 0.243, 0.243]
+  STD: [0.203, 0.203, 0.203]
 DATA_DIR: 
 DEBUG:
   DEBUG: False

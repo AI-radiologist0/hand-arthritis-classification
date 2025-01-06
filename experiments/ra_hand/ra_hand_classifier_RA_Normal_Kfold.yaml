@@ -10,7 +10,7 @@ DATASET:
   TRAIN_SET: train
   INCLUDE_CLASSES: ['ra', 'normal']
   AUGMENT: False
-  BASIC_TRANSFORM: True
+
 DATA_DIR: 
 DEBUG:
   DEBUG: False
@@ -51,6 +51,5 @@ WORKERS: 4
 KFOLD:
   USE_KFOLD: True
   KFOLD_SIZE: 5
-  P: 10
-  TEST_SET_RATIO: 0.0
-
+  P: 0
+  TEST_SET_RATIO: 0.15

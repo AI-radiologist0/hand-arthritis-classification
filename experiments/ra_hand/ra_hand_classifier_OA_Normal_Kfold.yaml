@@ -8,9 +8,10 @@ DATASET:
   ROOT: 
   TEST_SET: valid
   TRAIN_SET: train
-  INCLUDE_CLASSES: ['ra', 'normal']
-  AUGMENT: True
-
+  INCLUDE_CLASSES: ['oa', 'normal']
+  AUGMENT: False
+  MEAN: [0.243, 0.243, 0.243]
+  STD: [0.203, 0.203, 0.203]
 DATA_DIR: 
 DEBUG:
   DEBUG: False
@@ -33,7 +34,7 @@ TRAIN:
   BATCH_SIZE_PER_GPU: 64
   BEGIN_EPOCH: 0
   CHECKPOINT: 
-  END_EPOCH: 100
+  END_EPOCH: 250
   GAMMA1: 0.99
   GAMMA2: 0.0
   LR: 0.001
@@ -45,8 +46,6 @@ TRAIN:
   RESUME: False
   SHUFFLE: True
   WD: 0.0001
-  SCHEDULER: ReduceLROnPlateau
-  PATIENCE: 10
 WORKERS: 4
 KFOLD:
   USE_KFOLD: True
