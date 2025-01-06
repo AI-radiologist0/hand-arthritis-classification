@@ -191,8 +191,8 @@ def run_kfold_training(cfg, dataset, model, optimizer, scheduler, num_folds=5, p
         best_pert = float('inf')
         patience = 10
         counter = 0
-        best_model_path = f"{fold_output_dir}/best_model.pth.tar"
         final_model_path = f"{fold_output_dir}/final_model.pth.tar"
+        best_model_path = os.path.join(final_output_dir, 'ckpt', f"bestmodel_EarlyStop_{fold}_{num_folds}.pth.tar")
 
         # Optimizer와 Scheduler 초기화
         # optimizer = torch.optim.AdamW(model.parameters(), lr=0.001, weight_decay=1e-4)
@@ -207,8 +207,9 @@ def run_kfold_training(cfg, dataset, model, optimizer, scheduler, num_folds=5, p
         model = model.to("cuda")
 
         optimizer = torch.optim.Adam(model.parameters(), lr=cfg.TRAIN.LR, weight_decay=1e-4)
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=10)
-        best_model_saver = BestModelSaver(save_path=os.path.join(final_output_dir, 'ckpt', f"bestmodel_EarlyStop_{fold}_{num_folds}.pth.tar"))
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
+        # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=10)
+        best_model_saver = BestModelSaver(save_path=best_model_path)
 
 
         writer_dict = {'writer': SummaryWriter(log_dir=os.path.join(final_output_dir, 'tensorboard', 'kfold', f'kfold_{fold}')),

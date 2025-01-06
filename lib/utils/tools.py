@@ -8,7 +8,6 @@ import numpy as np
 import random
 
 from PIL import Image
-import matplotlib.pyplot as plt
 from torchvision import transforms
 from torch.utils.data import DataLoader, Subset, WeightedRandomSampler
 from torchvision import datasets, transforms
@@ -153,47 +152,6 @@ def parse_model_config(config_path):
 
 
 """ If you want visualize_inference to fit your model, you need to implement below func."""
-
-
-def visualize_inference(img, label, batch_size):
-    """ Visualize Image Batch"""
-    fig, axes = plt.subplots(1, batch_size, figsize=(10, 10))
-    for i in range(batch_size):
-        axes[i].imshow(np.squeeze(img[i]), cmap="gray")
-        axes[i].set_title(f"predicted: {label[i]}")
-        axes[i].axis('off')
-    plt.show()
-
-
-def visualize_feature_map(model, image):
-    model.network.eval()
-
-    # transformer
-    # transform = mnist_transform()
-
-    feature_map = None
-
-    # input_tensor
-    input_tensor = image.to(check_device())
-
-    def hook(module, input, output):
-        nonlocal feature_map
-        feature_map = output.detach().cpu()
-
-    target_layer = model.network.layers[6]
-    hook_handle = target_layer.register_forward_hook(hook)
-
-    with torch.no_grad():
-        model.network(input_tensor)
-
-    hook_handle.remove()
-
-    plt.figure(figsize=(12, 8))
-    for i in range(feature_map.size(1)):
-        plt.subplot(4, 8, i + 1)
-        plt.imshow(feature_map[0, i], cmap='viridis')
-        plt.axis('off')
-    plt.show()
 
 
 def show_img(img):
