@@ -22,6 +22,7 @@ import models
 from core.trainer import Trainer
 from utils.tools import split_dataset_parallel, balance_dataset_parallel
 from data import MedicalImageDataset
+from data.dataloader import create_test_loader
 
 def set_seed(seed):
     """Set the random seed for reproducibility."""
@@ -83,14 +84,15 @@ def validate_and_test():
     dataset = MedicalImageDataset(cfg, augment=False, include_classes=cfg.DATASET.INCLUDE_CLASSES)
     dataset = balance_dataset_parallel(dataset)
 
-    train_loader, val_loader, test_loader = split_dataset_parallel(
+    test_loader, train_val_idx, _ = create_test_loader(dataset)
+
+    train_loader, val_loader = split_dataset_parallel(
         dataset=dataset,
+        train_val_idx=train_val_idx,
         train_ratio=0.7,
-        val_ratio=0.15,
-        test_ratio=0.15,
+        val_ratio=0.3,
         batch_size=cfg.TRAIN.BATCH_SIZE_PER_GPU,
         num_workers=cfg.WORKERS,
-        logger=logger
     )
 
     # Load checkpoint
@@ -109,12 +111,12 @@ def validate_and_test():
 
     # Validate
     logger.info("Starting validation...")
-    val_perf = trainer.validate(0, val_loader)
+    val_perf, _ = trainer.validate(0, val_loader)
     logger.info(f"Validation performance: {val_perf:.4f}")
 
     # Test
     logger.info("Starting testing...")
-    test_perf = trainer.validate(0, test_loader)
+    test_perf, _ = trainer.validate(0, test_loader)
     logger.info(f"Test performance: {test_perf:.4f}")
 
 if __name__ == "__main__":

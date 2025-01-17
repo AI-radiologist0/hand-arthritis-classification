@@ -81,10 +81,11 @@ class MedicalImageDataset(Dataset):
         with open(json_file, 'r') as f:
             data = json.load(f)  # Load the JSON file
 
-        mean, std = cfg.DATASET.MEAN, cfg.DATASET.STD
+        self.mean, self.std = cfg.DATASET.MEAN, cfg.DATASET.STD
+        logger.info(f"Dataset mean {self.mean}, std {self.std}")
 
         self.data = []
-        self.transform = transform()
+        self.transform = transform(mean=self.mean, std=self.std)
         self.augment = augment
         self.include_classes = include_classes
         self.label_to_idx = {label: idx for idx, label in enumerate(include_classes)}
@@ -154,7 +155,7 @@ class MedicalImageDataset(Dataset):
 
                         # If augment, generate multiple augmented versions
                         if self.augment:
-                            augment_transform = get_augmentation_transforms()
+                            augment_transform = get_augmentation_transforms(mean=self.mean, std=self.std)
                             augmented_images = [augment_transform(original_image) for _ in range(3)]  # Generate 5 augmented images
                             for aug_img in augmented_images:
                                 processed_records.append({
