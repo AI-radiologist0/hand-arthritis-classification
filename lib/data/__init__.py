@@ -4,3 +4,4 @@
 #
 # -----------------------------------------------------------
 from .dataloader import MedicalImageDataset
+from .COCOannotation import COCOAnnotationDataset
