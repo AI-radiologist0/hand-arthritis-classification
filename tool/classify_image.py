@@ -21,8 +21,9 @@ from config import update_config
 import models
 from core.trainer import Trainer
 from utils.tools import split_dataset_parallel, balance_dataset_parallel
+from utils.vis import visualize_batch_with_gt_pred
+from utils.gradcam import visualize_gradcam_batch
 from data import MedicalImageDataset
-from data.dataloader import create_test_loader
 
 def set_seed(seed):
     """Set the random seed for reproducibility."""
@@ -35,8 +36,8 @@ def set_seed(seed):
 
 def parser_args():
     parser = argparse.ArgumentParser(description="hand-arthritis-classification")
-    parser.add_argument('--ckpt', help='path to checkpoint to resume training', type=str, required=True)
-    parser.add_argument('--cfg', help='experiment config file', default='experiments/test.yaml', type=str)
+    parser.add_argument('--ckpt', help='path to checkpoint to resume training', type=str, default='output/RA_hand_merge_cau_2024-12-14_22-35-43_epoch_0_250_classifier_ra_normal/ckpt/best_model.pth.tar')
+    parser.add_argument('--cfg', help='experiment config file', default='experiments/ra_hand_classifier_RA_Normal.yaml', type=str)
     parser.add_argument('--seed', help='random seed for reproducibility', type=int, default=42)
     return parser.parse_args()
 
@@ -84,15 +85,14 @@ def validate_and_test():
     dataset = MedicalImageDataset(cfg, augment=False, include_classes=cfg.DATASET.INCLUDE_CLASSES)
     dataset = balance_dataset_parallel(dataset)
 
-    test_loader, train_val_idx, _ = create_test_loader(dataset)
-
-    train_loader, val_loader = split_dataset_parallel(
+    train_loader, val_loader, test_loader = split_dataset_parallel(
         dataset=dataset,
-        train_val_idx=train_val_idx,
         train_ratio=0.7,
-        val_ratio=0.3,
+        val_ratio=0.15,
+        test_ratio=0.15,
         batch_size=cfg.TRAIN.BATCH_SIZE_PER_GPU,
         num_workers=cfg.WORKERS,
+        logger=logger
     )
 
     # Load checkpoint
@@ -111,13 +111,19 @@ def validate_and_test():
 
     # Validate
     logger.info("Starting validation...")
-    val_perf, _ = trainer.validate(0, val_loader)
+    val_perf = trainer.validate(0, val_loader)
     logger.info(f"Validation performance: {val_perf:.4f}")
 
     # Test
     logger.info("Starting testing...")
-    test_perf, _ = trainer.validate(0, test_loader)
+    test_perf = trainer.validate(0, test_loader)
     logger.info(f"Test performance: {test_perf:.4f}")
+
+    # visualization
+    for i, batch in enumerate(val_loader):
+        visualize_batch_with_gt_pred(batch, model, i, class_names=cfg.DATASET.INCLUDE_CLASSES)
+        visualize_gradcam_batch(batch, model, target_layer="features_49", class_names=cfg.DATASET.INCLUDE_CLASSES, output_dir='./gradcam')
+        break
 
 if __name__ == "__main__":
     validate_and_test()
