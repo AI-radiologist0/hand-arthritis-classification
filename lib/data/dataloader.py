@@ -20,19 +20,19 @@ from collections import Counter
 from config import cfg, update_config
 from utils.tools import set_seed
 
-def get_basic_transforms(mean=[0.243, 0.243, 0.243], std=[0.203, 0.203, 0.203]):
+def get_basic_transforms():
     transform = transforms.Compose([
         transforms.Resize((224, 224)),
         # transforms.RandomHorizontalFlip(p=0.5),
         # transforms.RandomRotation(degrees=30),
         transforms.ToTensor(),
-        transforms.Normalize(mean=mean, std=std),
+        transforms.Normalize(mean=[0.243, 0.243, 0.243], std=[0.203, 0.203, 0.203]),
     ])
     return transform
 
 logger = logging.getLogger(__name__)
 
-def get_augmentation_transforms(mean=[0.243, 0.243, 0.243], std=[0.203, 0.203, 0.203]):
+def get_augmentation_transforms():
     """
     데이터 증강 옵션을 포함한 Transform 생성
     """
@@ -42,7 +42,7 @@ def get_augmentation_transforms(mean=[0.243, 0.243, 0.243], std=[0.203, 0.203, 0
         transforms.RandomRotation(degrees=30),
         # transforms.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.1),
         transforms.ToTensor(),
-        transforms.Normalize(mean=mean, std=std),
+        transforms.Normalize(mean=[0.243, 0.243, 0.243], std=[0.203, 0.203, 0.203]),
 
     ])
 
@@ -287,7 +287,7 @@ def create_test_loader(dataset, test_ratio=0.15, batch_size=8, num_workers=4, se
 if __name__ == "__main__":
     def parser_args():
         parser = argparse.ArgumentParser(description="hand-arthritis-classification")
-        parser.add_argument('--cfg', help='experiment config file', default='./experiments/foot/ra_foot_classifier_RA_Normal.yaml',
+        parser.add_argument('--cfg', help='experiment config file', default='experiments/ra_hand_classifier_RA_Normal_Kfold.yaml',
                             type=str)
         return parser.parse_args()
 
