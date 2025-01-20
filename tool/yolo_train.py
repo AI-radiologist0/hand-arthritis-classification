@@ -1,39 +1,11 @@
 # -----------------------------------------------------------
-# 
+# YOLOv5 Training Script using Ultralytics
 # written by Jeongmin Kim (jm.kim@dankook.ac.kr)
-#
 # -----------------------------------------------------------
-import torch
 import argparse
-from torch.utils.data import DataLoader
-from yolov5 import YOLOv5  # YOLOv5 라이브러리 import -> yolo설치
-from data import COCOAnnotationDataset  # COCOAnnotationDataset import
-from utils import load_config  # config 로드 함수 # 내 횐경에 맞게 수정
-
-def train(cfg, train_loader, model, optimizer, device):
-    model.train()
-    running_loss = 0.0
-    for epoch in range(cfg.TRAIN.EPOCHS):
-        for batch_idx, batch in enumerate(train_loader):
-            images = batch['image'].to(device)
-            labels = batch['label'].to(device)
-            bboxes = batch['bbox'].to(device)  # Bounding box 정보도 가져옵니다.
-
-            optimizer.zero_grad()
-            outputs = model(images)
-
-            # 손실 함수 (YOLOv5 모델에 맞는 loss 함수 사용)
-            loss = model.compute_loss(outputs, bboxes, labels)  # YOLOv5에 맞는 손실 함수 사용
-            loss.backward()
-            optimizer.step()
-
-            running_loss += loss.item()
-            if batch_idx % 100 == 0:
-                print(f"Epoch [{epoch}/{cfg.TRAIN.EPOCHS}], Step [{batch_idx}/{len(train_loader)}], Loss: {loss.item():.4f}")
-
-        # 모델 저장
-        torch.save(model.state_dict(), f"{cfg.TRAIN.MODEL_DIR}/model_epoch_{epoch+1}.pth")
-        print(f"Epoch {epoch+1} completed with loss: {running_loss / len(train_loader)}")
+from ultralytics import YOLO
+from config import cfg, update_config  # Config 로드 함수
+import models  # YOLO 모델 생성 함수 포함
 
 def main():
     # ArgumentParser로 학습 설정 받기
@@ -45,19 +17,39 @@ def main():
     args = parser.parse_args()
 
     # Config 파일 불러오기
-    cfg = load_config(args.cfg)  # load_config는 config 파일을 로드하는 함수입니다.
+    update_config(cfg, args)  # Config 업데이트
+    cfg.freeze()
 
-    # 모델, 손실 함수 및 옵티마이저 설정
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = YOLOv5.load(cfg.TRAIN.MODEL_PATH).to(device)  # YOLOv5 모델 로드
-    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+    # 모델 생성 (Ultralytics YOLO)
+    model = models.create('YOLOV5', model_name='yolov5s', pretrained=True, num_classes=1)
 
-    # 데이터 로더 준비
-    dataset = COCOAnnotationDataset(cfg, augment=True)
-    train_loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=4)
+    # 1. 학습
+    print("Starting training...")
+    model.train(
+        data=cfg.DATA.DATASET,  # 데이터셋 경로 (data.yaml)
+        epochs=args.epochs,    # 학습 에포크
+        imgsz=cfg.DATA.IMG_SIZE,  # 입력 이미지 크기
+        batch=args.batch_size, # 배치 크기
+        device=0               # GPU 설정
+    )
 
-    # 학습 시작
-    train(cfg, train_loader, model, optimizer, device)
+    # 2. 검증
+    print("Starting validation...")
+    metrics = model.val(
+        data=cfg.DATA.DATASET,  # 검증 데이터셋
+        batch=args.batch_size, # 배치 크기
+        device=0               # GPU 설정
+    )
+    print(f"Validation Metrics: {metrics}")
+
+    # 3. 추론 (선택적)
+    print("Running inference...")
+    results = model.predict(
+        source='path/to/val/images',  # 검증 이미지 경로
+        save=True                    # 결과 저장
+    )
+    results.show()
+
 
 if __name__ == '__main__':
     main()
