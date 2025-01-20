@@ -4,9 +4,11 @@
 # Written by Jeongmin Kim(jm.kim@dankook.ac.kr)
 # ----------------------------------------------------
 from .vgg19 import VGG19
+from yolo import YOLOv5
 
 __factory = {
-    'VGG19' : VGG19
+    'VGG19' : VGG19,
+    'YOLOV5' : YOLOv5,
 }
 
 def names():
