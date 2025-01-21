@@ -1,0 +1,7 @@
+train: output_coco/JPEGImages
+val: output_coco/JPEGImages
+test: output_coco/JPEGImages
+names:
+  - foot  # 클래스 이름
+
+coco_annotations: ./data/foot/output_coco/annotations.json  # COCO 포맷 어노테이션 경로

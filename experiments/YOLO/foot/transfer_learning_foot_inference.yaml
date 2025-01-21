@@ -35,11 +35,12 @@ MODEL:
     PAN: True
     SCORE_THRESHOLD: 0.25
     STRIDES: [8, 16, 32]
+    PT: ./runs/detect/train/weights/best.pt
   INIT_WEIGHTS: True
   NAME: YOLOv5
   PRETRAINED: True
 OUTPUT_DIR: 
-PHASE: train
+PHASE: inference
 PRINT_FREQ: 1
 TEST:
   BATCH_SIZE_PER_GPU: 32
