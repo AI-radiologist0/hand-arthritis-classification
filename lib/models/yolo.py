@@ -1,58 +1,86 @@
 # -----------------------------------------------------------
-# YOLOv5 Wrapper with Ultralytics Library
+# YOLOv5 Wrapper with Ultralytics Library (Using cfg)
 # written by Jeongmin Kim (jm.kim@dankook.ac.kr)
 # -----------------------------------------------------------
 from ultralytics import YOLO
 
 
 class YOLOv5:
-    def __init__(self, model_name='yolov5s', pretrained=True, num_classes=80):
+    def __init__(self, cfg):
         """
-        YOLOv5 모델 클래스 (Ultralytics 활용)
+        YOLOv5 모델 클래스 (Ultralytics 활용, cfg 기반 설정)
 
         Args:
-            model_name (str): 사용할 YOLOv5 모델의 이름 (e.g., 'yolov5s', 'yolov5m', 'yolov5l', 'yolov5x')
-            pretrained (bool): 사전 학습된 가중치 사용 여부
-            num_classes (int): 출력 클래스 수
+            cfg (dict): 설정 파일 정보를 포함한 딕셔너리
         """
+        model_name = cfg.MODEL.NAME.lower()  # 모델 이름
+        phase = cfg.PHASE
+        pretrained = cfg.MODEL.PRETRAINED if cfg.MODEL.PRETRAINED else None # Load Pretrained YOLO
+
+
+        if phase == 'inference':
+            self.model = None
+            self.load_pretrained(cfg.MODEL.EXTRA.PT)
+            return
+
         if pretrained:
-            # Ultralytics YOLO 모델 로드
-            self.model = YOLO(f"{model_name}.pt")
+            # 사전 학습된 모델 로드
+            self.model = YOLO(f"{model_name}s.pt")
         else:
             # YAML 파일로 새로운 모델 정의
             self.model = YOLO(f"{model_name}.yaml")
 
-        # 클래스 수 업데이트 (필요시 수정)
-        if num_classes != self.model.model[-1].nc:
-            self.model.model[-1].nc = num_classes  # 클래스 수 업데이트
-            self.model.names = [str(i) for i in range(num_classes)]  # 클래스 이름 업데이트
-
-    def train(self, data, epochs=50, imgsz=640, batch=16, device=0):
+    def train(self, cfg):
         """
         모델 학습
 
         Args:
-            data (str): 데이터셋 경로 (data.yaml 파일)
-            epochs (int): 학습 에포크 수
-            imgsz (int): 입력 이미지 크기
-            batch (int): 배치 크기
-            device (int or str): 학습에 사용할 디바이스 (GPU ID 또는 'cpu')
+            cfg (dict): 설정 파일 정보를 포함한 딕셔너리
         """
-        self.model.train(data=data, epochs=epochs, imgsz=imgsz, batch=batch, device=device)
+        device = cfg.DEVICE.lower()  # 소문자로 변환
+        if device == "gpu":  # 'gpu'를 '0'으로 매핑
+            device = "0"
+        elif device.startswith("gpu:"):  # 'gpu:1' 형태 처리
+            device = device.split(":")[1]
+        elif device == "cpu":
+            device = "cpu"
+        else:
+            raise ValueError(f"Invalid device: {cfg.DEVICE}. Use 'gpu', 'gpu:0', or 'cpu'.")
 
-    def val(self, data, batch=16, device=0):
+        self.model.train(
+            data=cfg.DATASET.JSON,  # data.json 경로
+            epochs=cfg.TRAIN.END_EPOCH,
+            imgsz=cfg.MODEL.EXTRA.INPUT_SIZE[0],
+            batch=cfg.TRAIN.BATCH_SIZE_PER_GPU,
+            device=device
+        )
+
+    def val(self, cfg):
         """
         모델 검증
 
         Args:
-            data (str): 데이터셋 경로 (data.yaml 파일)
-            batch (int): 배치 크기
-            device (int or str): 검증에 사용할 디바이스 (GPU ID 또는 'cpu')
+            cfg (dict): 설정 파일 정보를 포함한 딕셔너리
 
         Returns:
             dict: 검증 결과 (mAP, Precision, Recall 등)
         """
-        return self.model.val(data=data, batch=batch, device=device)
+        device = cfg.DEVICE.lower()  # 소문자로 변환
+        if device == "gpu":  # 'gpu'를 '0'으로 매핑
+            device = "0"
+        elif device.startswith("gpu:"):  # 'gpu:1' 형태 처리
+            device = device.split(":")[1]
+        elif device == "cpu":
+            device = "cpu"
+        else:
+            raise ValueError(f"Invalid device: {cfg.DEVICE}. Use 'gpu', 'gpu:0', or 'cpu'.")
+
+
+        return self.model.val(
+            data=cfg.DATASET.JSON,
+            batch=cfg.TEST.BATCH_SIZE_PER_GPU,
+            device=device
+        )
 
     def predict(self, source, save=False, device=0):
         """
