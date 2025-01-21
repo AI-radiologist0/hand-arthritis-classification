@@ -51,8 +51,6 @@ _C.DATASET.DATA_FORMAT = 'jpg'
 _C.DATASET.INCLUDE_CLASSES = ['oa', 'normal']
 _C.DATASET.AUGMENT = True
 _C.DATASET.BASIC_TRANSFORM = True
-_C.DATASET.MEAN = [0.243, 0.243, 0.243]
-_C.DATASET.STD = [0.203, 0.203, 0.203]
 # _C.DATASET.SPLIT_RATIO = {'train': 0.7, 'validation': 0.15, 'test': 0.15}
 
 # 훈련 관련 설정
