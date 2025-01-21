@@ -6,49 +6,43 @@ import argparse
 from ultralytics import YOLO
 from config import cfg, update_config  # Config 로드 함수
 import models  # YOLO 모델 생성 함수 포함
+import os
+print(os.environ.get("CUDA_VISIBLE_DEVICES"))
+
 
 def main():
     # ArgumentParser로 학습 설정 받기
     parser = argparse.ArgumentParser(description='Train YOLOv5 model for X-ray foot detection')
     parser.add_argument('--cfg', type=str, required=True, help='Path to config file')
-    parser.add_argument('--batch_size', type=int, default=32, help='Batch size')
-    parser.add_argument('--epochs', type=int, default=50, help='Number of epochs')
-    parser.add_argument('--lr', type=float, default=0.001, help='Learning rate')
+    parser.add_argument('--batch_size', type=int, help='Batch size')
+    parser.add_argument('--epochs', type=int, help='Number of epochs')
+    parser.add_argument('--lr', type=float, help='Learning rate')
     args = parser.parse_args()
 
-    # Config 파일 불러오기
-    update_config(cfg, args)  # Config 업데이트
+    # Config 파일 불러오기 및 업데이트
+    update_config(cfg, args)  # 명령줄 인자로 받은 값을 반영하여 Config 업데이트
     cfg.freeze()
 
-    # 모델 생성 (Ultralytics YOLO)
-    model = models.create('YOLOV5', model_name='yolov5s', pretrained=True, num_classes=1)
+    # 모델 생성 (YOLOv5)
+    model = models.create('YOLOV5', cfg)
 
     # 1. 학습
     print("Starting training...")
-    model.train(
-        data=cfg.DATA.DATASET,  # 데이터셋 경로 (data.yaml)
-        epochs=args.epochs,    # 학습 에포크
-        imgsz=cfg.DATA.IMG_SIZE,  # 입력 이미지 크기
-        batch=args.batch_size, # 배치 크기
-        device=0               # GPU 설정
-    )
+    model.train(cfg)
 
     # 2. 검증
     print("Starting validation...")
-    metrics = model.val(
-        data=cfg.DATA.DATASET,  # 검증 데이터셋
-        batch=args.batch_size, # 배치 크기
-        device=0               # GPU 설정
-    )
+    metrics = model.val(cfg)
     print(f"Validation Metrics: {metrics}")
 
     # 3. 추론 (선택적)
-    print("Running inference...")
-    results = model.predict(
-        source='path/to/val/images',  # 검증 이미지 경로
-        save=True                    # 결과 저장
-    )
-    results.show()
+    # print("Running inference...")
+    # results = model.predict(
+    #     source='path/to/val/images',  # 검증 이미지 경로
+    #     save=True,                    # 결과 저장 여부
+    #     device=cfg.GPUS              # GPU 설정
+    # )
+    # results.show()
 
 
 if __name__ == '__main__':
