@@ -17,6 +17,7 @@ VGG19.INPUT_SIZE = [224, 224, 3]
 VGG19.NUM_CLASSES = 2
 
 YOLOv5 = CN(new_allowed=True)
+YOLOv5.CFG = './experiments/YOLO/model/yolov5.yaml'
 # YOLOv5 specific configurations
 YOLOv5.INPUT_SIZE = [640, 640, 3]  # Input resolution
 YOLOv5.NUM_CLASSES = 1  # Number of object classes
@@ -32,6 +33,7 @@ YOLOv5.NUM_ANCHORS = 3  # Number of anchors per scale
 YOLOv5.BACKBONE = "CSPDarknet53"  # Default backbone network
 YOLOv5.FPN = True  # Use Feature Pyramid Network
 YOLOv5.PAN = True  # Use Path Aggregation Network
+YOLOv5.PT = './runs/detect/weights/best.pt'
 
 
 

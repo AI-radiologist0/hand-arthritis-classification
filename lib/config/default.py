@@ -34,10 +34,10 @@ _C.CUDNN.ENABLED = True
 
 # common params for NETWORK
 _C.MODEL = CN()
-_C.MODEL.NAME = 'VGG19'
+_C.MODEL.NAME = 'YOLOv5'
 _C.MODEL.EXTRA = MODEL_EXTRAS[_C.MODEL.NAME]
 _C.MODEL.INIT_WEIGHTS = True
-_C.MODEL.PRETRAINED = ''
+_C.MODEL.PRETRAINED = True
 
 # if you want to add new params for NETWORK, Init new Params below!
 
