@@ -7,6 +7,10 @@ import logging
 import numpy as np
 import random
 
+import wandb
+import matplotlib.pyplot as plt
+
+
 from PIL import Image
 from torchvision import transforms
 from torch.utils.data import DataLoader, Subset, WeightedRandomSampler
@@ -586,9 +590,9 @@ class BestModelSaver:
         """Saves the model when validation improves."""
         torch.save({
             "model_state_dict": model.state_dict(),
-            "loss": loss,
-            "accuracy": accuracy,
-            "epoch": self.best_epoch
+            # "loss": loss,
+            # "accuracy": accuracy,
+            # "epoch": self.best_epoch
         }, self.save_path)
         logger.info(
             f"Best model saved at epoch {self.best_epoch + 1} with loss: {loss:.4f} and accuracy: {accuracy:.4f}")
@@ -597,3 +601,37 @@ class BestModelSaver:
         """Saves the final model at the end of training."""
         torch.save(model.state_dict(), save_path)
         logger.info(f"Final model saved at {save_path}")
+        
+    
+def log_misclassified_images(cfg, trainer, val_loader, epoch):
+    """Logs misclassified images to wandb if graph_debug is enabled."""
+    if not cfg.DEBUG.GRAPH_DEBUG:
+        return
+    
+    data = next(iter(val_loader))  # Get a single batch
+    images, labels = data['image'], data['label']
+    images, labels = images.to(trainer.device), labels.to(trainer.device)
+    labels = torch.argmax(labels, dim=1)  # Convert one-hot labels to class indices
+    outputs = trainer.model(images)
+    preds = torch.argmax(outputs, dim=1)
+    
+    misclassified_images = []
+    misclassified_labels = []
+    misclassified_preds = []
+    
+    for i in range(len(labels)):
+        if preds[i] != labels[i]:
+            misclassified_images.append(images[i].cpu().numpy())
+            misclassified_labels.append(labels[i].cpu().item())
+            misclassified_preds.append(preds[i].cpu().item())
+    
+    if misclassified_images:
+        fig, axes = plt.subplots(1, min(10, len(misclassified_images)), figsize=(15, 5))
+        for i, ax in enumerate(axes):
+            img = np.transpose(misclassified_images[i], (1, 2, 0))
+            ax.imshow(img, cmap='gray')
+            ax.set_title(f"True: {misclassified_labels[i]}, Pred: {misclassified_preds[i]}")
+            ax.axis("off")
+        
+        wandb.log({"Misclassified Images": wandb.Image(fig)}, step=epoch)
+        plt.close(fig)
