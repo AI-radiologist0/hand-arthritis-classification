@@ -20,19 +20,19 @@ from collections import Counter
 from config import cfg, update_config
 from utils.tools import set_seed
 
-def get_basic_transforms():
+def get_basic_transforms(mean, std):
     transform = transforms.Compose([
         transforms.Resize((224, 224)),
-        # transforms.RandomHorizontalFlip(p=0.5),
-        # transforms.RandomRotation(degrees=30),
+        transforms.RandomHorizontalFlip(p=0.5),
+        transforms.RandomRotation(degrees=30),
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.243, 0.243, 0.243], std=[0.203, 0.203, 0.203]),
+        transforms.Normalize(mean=mean, std=std),
     ])
     return transform
 
 logger = logging.getLogger(__name__)
 
-def get_augmentation_transforms():
+def get_augmentation_transforms(mean, std):
     """
     데이터 증강 옵션을 포함한 Transform 생성
     """
@@ -42,7 +42,7 @@ def get_augmentation_transforms():
         transforms.RandomRotation(degrees=30),
         # transforms.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.1),
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.243, 0.243, 0.243], std=[0.203, 0.203, 0.203]),
+        transforms.Normalize(mean=mean, std=std),
 
     ])
 
@@ -164,7 +164,7 @@ class MedicalImageDataset(Dataset):
                                     'label': label_idx
                                 })
                         else:
-                            transform = get_basic_transforms()
+                            transform = get_basic_transforms(self.mean, self.std)
                             
             return processed_records
 
@@ -293,7 +293,8 @@ if __name__ == "__main__":
 
     arg = parser_args()
     update_config(cfg, arg)
-    dataset = MedicalImageDataset(cfg, augment=False, include_classes=["normal", "ra"])
+    include_classes = cfg.DATASET.INCLUDE_CLASSES
+    dataset = MedicalImageDataset(cfg, augment=False, include_classes=include_classes)
     mean, std = dataset.calculate_mean_std()
     print(mean, std)
     # dataloader = DataLoader(dataset, batch_size=8, shuffle=True, num_workers=2)
