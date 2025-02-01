@@ -610,6 +610,7 @@ def log_misclassified_images(cfg, trainer, val_loader, epoch):
     
     data = next(iter(val_loader))  # Get a single batch
     images, labels = data['image'], data['label']
+    patient_id = data['patient_id']
     images, labels = images.to(trainer.device), labels.to(trainer.device)
     labels = torch.argmax(labels, dim=1)  # Convert one-hot labels to class indices
     outputs = trainer.model(images)
@@ -618,19 +619,24 @@ def log_misclassified_images(cfg, trainer, val_loader, epoch):
     misclassified_images = []
     misclassified_labels = []
     misclassified_preds = []
+    misclassified_pids = []
     
     for i in range(len(labels)):
         if preds[i] != labels[i]:
             misclassified_images.append(images[i].cpu().numpy())
             misclassified_labels.append(labels[i].cpu().item())
             misclassified_preds.append(preds[i].cpu().item())
+            print(patient_id[i])
+            misclassified_pids.append(patient_id[i])
     
     if misclassified_images:
-        fig, axes = plt.subplots(1, min(10, len(misclassified_images)), figsize=(15, 5))
+        fig, axes = plt.subplots(2, 5, figsize=(15, 5), constrained_layout = True)
+        axes = axes.flatten()
         for i, ax in enumerate(axes):
             img = np.transpose(misclassified_images[i], (1, 2, 0))
+            img = (img - img.min()) / (img.max()- img.min())
             ax.imshow(img, cmap='gray')
-            ax.set_title(f"True: {misclassified_labels[i]}, Pred: {misclassified_preds[i]}")
+            ax.set_title(f"True: {misclassified_labels[i]}, Pred: {misclassified_preds[i]} \n Patient ID:{misclassified_pids[i]}", fontsize=8)
             ax.axis("off")
         
         wandb.log({"Misclassified Images": wandb.Image(fig)}, step=epoch)
