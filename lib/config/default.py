@@ -51,6 +51,8 @@ _C.DATASET.DATA_FORMAT = 'jpg'
 _C.DATASET.INCLUDE_CLASSES = ['oa', 'normal']
 _C.DATASET.AUGMENT = True
 _C.DATASET.BASIC_TRANSFORM = True
+_C.DATASET.MEAN = [0.1147, 0.1147, 0.1147]
+_C.DATASET.STD = [0.2194, 0.2194, 0.2194]
 # _C.DATASET.SPLIT_RATIO = {'train': 0.7, 'validation': 0.15, 'test': 0.15}
 
 # 훈련 관련 설정
@@ -97,6 +99,7 @@ _C.TEST.TEST_SET_RATIO = 0.15
 # debug
 _C.DEBUG = CN()
 _C.DEBUG.DEBUG = False
+_C.DEBUG.GRAPH_DEBUG = True
 
 
 def update_config(cfg, args):
