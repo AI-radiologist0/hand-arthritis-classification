@@ -17,6 +17,7 @@ import models
 from core.trainer import Trainer
 from core.kfold_handler import run_kfold_training
 from utils.tools import split_dataset_parallel, balance_dataset, set_seed, EarlyStopping, BestModelSaver, log_misclassified_images
+from utils.gradcam import log_gradcam_batch_on_wandb
 from data import MedicalImageDataset
 from data.dataloader import create_test_loader
 
